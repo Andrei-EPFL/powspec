@@ -125,16 +125,17 @@ int save_res(const CONF *conf, const CATA *cat, const MESH *mesh,
 
     if (conf->verbose) {
       if (cat->num == 2) {
-        printf("  Auto power spectra for catalog %d saved to file: `%s'.\n",
+        printf("  Auto power spectra for catalog %d saved to file: `%s'\n",
           n + 1, conf->oauto[n]);
       }
       else
-        printf("  Auto power spectra saved to file: `%s'.\n", conf->oauto[n]);
+        printf("  Auto power spectra saved to file: `%s'\n", conf->oauto[n]);
     }
   }
 
   if (!conf->iscross) {
     output_destroy(ofile);
+    printf(FMT_DONE);
     return 0;
   }
 
@@ -221,7 +222,9 @@ int save_res(const CONF *conf, const CATA *cat, const MESH *mesh,
   output_destroy(ofile);
 
   if (conf->verbose)
-    printf("  Cross power spectra saved to file: `%s'.\n", conf->ocross);
+    printf("  Cross power spectra saved to file: `%s'\n", conf->ocross);
+
+  printf(FMT_DONE);
   return 0;
 }
 

@@ -516,17 +516,17 @@ static int def_box(const CATA *cat, const bool issim, const double *bsize,
 
   for (int i = 0; i < 3; i++) {
     if (min[i] > max[i]) {
-      P_ERR("invalid %c coordinate value in the catalogs.\n", c[i]);
+      P_ERR("invalid %c coordinate value in the catalogs\n", c[i]);
       return POWSPEC_ERR_CATA;
     }
     /* Verify coordinates of the simulation box. */
     if (issim) {
       if (min[i] < 0) {
-        P_ERR("%c coordinate below 0: %lf.\n", c[i], min[i]);
+        P_ERR("%c coordinate below 0: %lf\n", c[i], min[i]);
         return POWSPEC_ERR_CATA;
       }
       if (max[i] >= bsize[i]) {
-        P_ERR("%c coordinate not smaller than BOX_SIZE: %lf.\n", c[i], max[i]);
+        P_ERR("%c coordinate not smaller than BOX_SIZE: %lf\n", c[i], max[i]);
         return POWSPEC_ERR_CATA;
       }
     }
@@ -544,7 +544,7 @@ static int def_box(const CATA *cat, const bool issim, const double *bsize,
     for (int i = 0; i < 3; i++) {
       if (max[i] - min[i] > bsize[i]) {
         P_ERR("BOX_SIZE is too small for the %c coordinates,"
-            " should be at least " OFMT_DBL ".\n", c[i], max[i] - min[i]);
+            " should be at least " OFMT_DBL "\n", c[i], max[i] - min[i]);
         return POWSPEC_ERR_CATA;
       }
       bmin[i] = (max[i] + min[i] - bsize[i]) * 0.5;
@@ -874,21 +874,21 @@ Return:
 MESH *genr_mesh(const CONF *conf, CATA *cat) {
   printf("Generating meshes for FFT ...");
   if (!conf) {
-    P_ERR("configuration parameters not loaded.\n");
+    P_ERR("configuration parameters not loaded\n");
     return NULL;
   }
   if (conf->verbose) printf("\n");
   fflush(stdout);
 
   if (!cat) {
-    P_ERR("catalogs not read.\n");
+    P_ERR("catalogs not read\n");
     return NULL;
   }
 
   /* Initialise the meshes. */
   MESH *mesh = mesh_init(conf);
   if (!mesh) {
-    P_ERR("failed to initalise the meshes.\n");
+    P_ERR("failed to initalise the meshes\n");
     return NULL;
   }
 
@@ -915,8 +915,8 @@ MESH *genr_mesh(const CONF *conf, CATA *cat) {
 
   /* Release memory for the catalogs (meta data is still necessary). */
   // for (int i = 0; i < cat->num; i++) {
-    // if (cat->data[i]) free(cat->data[i]);
-    // if (cat->rand[i]) free(cat->rand[i]);
+  //   if (cat->data[i]) free(cat->data[i]);
+  //   if (cat->rand[i]) free(cat->rand[i]);
   // }
   // free(cat->data); cat->data = NULL;
   // free(cat->rand); cat->rand = NULL;

@@ -1,7 +1,7 @@
 CC = gcc
 CFLAGS = -std=c99 -O3 -Wall
 LIBS = -lm -lfftw3f
-INCL = -I. -Iio -Ilib -Imath
+INCL = -Isrc -Iio -Ilib -Imath
 
 
 # Settings for FFTW
@@ -19,7 +19,7 @@ LIBS += -DOMP -fopenmp -lfftw3f_omp
 
 # Settings for CFITSIO (not implemented yet)
 
-SRCS = $(wildcard *.c lib/*.c io/*.c math/*.c)
+SRCS = $(wildcard src/*.c lib/*.c io/*.c math/*.c)
 EXEC = libpowspec.so
 
 all:

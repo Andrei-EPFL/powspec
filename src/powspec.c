@@ -1,5 +1,5 @@
 /*******************************************************************************
-* main.c: this file is part of the powspec program.
+* powspec.c: this file is part of the powspec program.
 
 * powspec: C code for auto and cross power spectra evaluation.
 
@@ -34,7 +34,7 @@ double *compute_pk(CATA *cata, int *nkbin, int argc, char *argv[]) {
   CONF *conf;
   if (!(conf = load_conf(argc, argv))) {
     printf(FMT_FAIL);
-    P_EXT("failed to load configuration parameters.\n");
+    P_EXT("failed to load configuration parameters\n");
     return NULL;
   }
 
@@ -48,7 +48,7 @@ double *compute_pk(CATA *cata, int *nkbin, int argc, char *argv[]) {
 
   if (cnvt_coord(conf, cata)) {
     printf(FMT_FAIL);
-    P_EXT("failed to convert coordinates.\n");
+    P_EXT("failed to convert coordinates\n");
     conf_destroy(conf); cata_destroy(cata);
     return NULL;
   }
@@ -56,7 +56,7 @@ double *compute_pk(CATA *cata, int *nkbin, int argc, char *argv[]) {
   MESH *mesh;
   if (!(mesh = genr_mesh(conf, cata))) {
     printf(FMT_FAIL);
-    P_EXT("failed to generate the density fields.\n");
+    P_EXT("failed to generate the density fields\n");
     conf_destroy(conf); cata_destroy(cata);
     return NULL;
   }
@@ -64,7 +64,7 @@ double *compute_pk(CATA *cata, int *nkbin, int argc, char *argv[]) {
   PK *pk;
   if (!(pk = powspec(conf, cata, mesh))) {
     printf(FMT_FAIL);
-    P_EXT("failed to compute the power spectra.\n");
+    P_EXT("failed to compute the power spectra\n");
     conf_destroy(conf); cata_destroy(cata); mesh_destroy(mesh);
     return NULL;
   }

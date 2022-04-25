@@ -160,11 +160,11 @@ static double *cnvt_z_sample(const CONF *conf, const CATA *cat, const int num) {
   double *pmax;                 /* thread-private maximum redshift */
   double *pmin;                 /* thread-private minimum redshift */
   if (!(pmax = calloc(nomp, sizeof(double)))) {
-    P_ERR("failed to allocate memory for thread-private redshift.\n");
+    P_ERR("failed to allocate memory for thread-private redshift\n");
     return NULL;
   }
   if (!(pmin = calloc(nomp, sizeof(double)))) {
-    P_ERR("failed to allocate memory for thread-private redshift.\n");
+    P_ERR("failed to allocate memory for thread-private redshift\n");
     free(pmax); return NULL;
   }
   for (int i = 0; i < nomp; i++) {
@@ -264,14 +264,14 @@ static double *cnvt_z_sample(const CONF *conf, const CATA *cat, const int num) {
 #endif
 
   if (zmin > zmax) {
-    P_ERR("invalid redshift value in the catalogs.\n");
+    P_ERR("invalid redshift value in the catalogs\n");
     return NULL;
   }
 
   /* Generate sample points. */
   double *zsp = malloc(num * sizeof(double));
   if (!zsp) {
-    P_ERR("failed to allocate memory for sample points of redshifts.\n");
+    P_ERR("failed to allocate memory for sample points of redshifts\n");
     return NULL;
   }
   for (int i = 0; i < num; i++)
@@ -440,7 +440,7 @@ static int cnvt_coord_interp(const CONF *conf, CATA *cat) {
   /* Create the structure for interpolation. */
   COORD_CNVT *cnvt = cnvt_init();
   if (!cnvt) {
-    P_ERR("failed to allocate memory for coordinate conversion.\n");
+    P_ERR("failed to allocate memory for coordinate conversion\n");
     return POWSPEC_ERR_MEMORY;
   }
 
@@ -452,7 +452,7 @@ static int cnvt_coord_interp(const CONF *conf, CATA *cat) {
   /* Creat the second derivative for interpolation. */
   cnvt->ypp = cspline_ypp(cnvt->z, cnvt->d, cnvt->nsp);
   if (!cnvt->ypp) {
-    P_ERR("failed to interpolate the sample points.\n");
+    P_ERR("failed to interpolate the sample points\n");
     return POWSPEC_ERR_CNVT;
   }
 
@@ -505,7 +505,7 @@ static int cnvt_coord_integr(const CONF *conf, CATA *cat) {
   int order = cnvt_legauss_order(conf->omega_m, conf->omega_l, conf->omega_k,
       widx, conf->ecdst, zsp, POWSPEC_INT_NUM_ZSP);
   if (order == INT_MAX) {
-    P_ERR("failed to perform the convergency test for integrations.\n");
+    P_ERR("failed to perform the convergency test for integrations\n");
     return POWSPEC_ERR_CNVT;
   }
 
@@ -554,7 +554,7 @@ Return:
 ******************************************************************************/
 int cnvt_coord(const CONF *conf, CATA *cat) {
   if (!conf) {
-    P_ERR("configuration parameters not loaded.\n");
+    P_ERR("configuration parameters not loaded\n");
     return POWSPEC_ERR_CONF;
   }
   if (!conf->cnvt) return 0;
@@ -564,7 +564,7 @@ int cnvt_coord(const CONF *conf, CATA *cat) {
   fflush(stdout);
 
   if (!cat) {
-    P_ERR("catalogs not read.\n");
+    P_ERR("catalogs not read\n");
     return POWSPEC_ERR_CATA;
   }
 
