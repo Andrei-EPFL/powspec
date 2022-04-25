@@ -66,6 +66,7 @@
 #define POWSPEC_MAX_GSIZE               65536
 #define POWSPEC_KMAX_UNSET_VAL          -1
 #define POWSPEC_KMAX_ISSET(x)           ((x) > 0)
+#define POWSPEC_MAX_MU_BIN              65536
 
 /* Priority of parameters from different sources. */
 #define POWSPEC_PRIOR_CMD               5

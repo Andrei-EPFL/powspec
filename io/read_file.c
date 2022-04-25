@@ -11,6 +11,7 @@
 *******************************************************************************/
 
 #include "read_file.h"
+#include <stdlib.h>
 
 const char *powspec_ffmt_names[] = {
   "ASCII",

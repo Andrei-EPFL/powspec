@@ -88,7 +88,7 @@ typedef struct {
   bool isauto[2];       /* Indicate whether to compute auto power spectra. */
   bool iscross;         /* Indicate whether to compute cross power spectra. */
   bool oheader;         /* OUTPUT_HEADER   */
-  int ovwrite;          /* OVERWRITE       */
+  int ovwrite;          /* OVER_WRITE      */
   bool verbose;         /* VERBOSE         */
 } CONF;
 

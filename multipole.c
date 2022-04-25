@@ -121,7 +121,7 @@ static void powspec_precomp(MESH *mesh, PK *pk, const int verb) {
     if (!kcnt || !ccnt) {
 #pragma omp critical
       {
-        P_ERR("failed to allocate memory for counting modes\n");
+        P_ERR("failed to allocate memory for counting modes.\n");
         exit(POWSPEC_ERR_MEMORY);
       }
     }
@@ -344,14 +344,14 @@ static PK *powspec_init(const CONF *conf, const MESH *mesh) {
   double nbin = round((kmax - conf->kmin) / pk->dk);
   if (nbin >= INT_MAX) {
     P_ERR("too many wave number bins due to the small bin size: "
-        OFMT_DBL "\n", pk->dk);
+        OFMT_DBL ".\n", pk->dk);
     powspec_destroy(pk); return NULL;
   }
   pk->nbin = (int) nbin;
   if (conf->kmin + pk->dk * pk->nbin > kny) pk->nbin -= 1;
   if (pk->nbin < 1) {
     P_ERR("not enough k bins given the Nyquist frequency and the bin size: "
-        OFMT_DBL "\n", pk->dk);
+        OFMT_DBL ".\n", pk->dk);
     powspec_destroy(pk); return NULL;
   }
 
@@ -1179,18 +1179,18 @@ Return:
 PK *powspec(const CONF *conf, const CATA *cat, MESH *mesh) {
   printf("Evaluating power spectra ...");
   if (!conf) {
-    P_ERR("configuration parameters not loaded\n");
+    P_ERR("configuration parameters not loaded.\n");
     return NULL;
   }
   if (conf->verbose) printf("\n");
   fflush(stdout);
 
   if (!cat) {
-    P_ERR("catalogs not read\n");
+    P_ERR("catalogs not read.\n");
     return NULL;
   }
   if (!mesh) {
-    P_ERR("meshes not generated\n");
+    P_ERR("meshes not generated.\n");
     return NULL;
   }
 
@@ -1208,7 +1208,7 @@ PK *powspec(const CONF *conf, const CATA *cat, MESH *mesh) {
   /* Initialise the structure for power spectra. */
   PK *pk = powspec_init(conf, mesh);
   if (!pk) {
-    P_ERR("failed to initialise the power spectra\n");
+    P_ERR("failed to initialise the power spectra.\n");
     return NULL;
   }
 

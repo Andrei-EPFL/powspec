@@ -86,7 +86,7 @@ Return:
 CATA *read_cata(const CONF *conf) {
   printf("Reading catalogs ...");
   if (!conf) {
-    P_ERR("configuration parameters not loaded\n");
+    P_ERR("configuration parameters not loaded.\n");
     return NULL;
   }
   if (conf->verbose) printf("\n");
@@ -125,7 +125,7 @@ CATA *read_cata(const CONF *conf) {
     }
 #ifdef WITH_CFITSIO
     else if (ftype == POWSPEC_FFMT_FITS) {
-      P_ERR("FITS format not implemented yet\n");      /* TODO */
+      P_ERR("FITS format not implemented yet.\n");      /* TODO */
       cata_destroy(cat);
       return NULL;
     }
@@ -155,7 +155,7 @@ CATA *read_cata(const CONF *conf) {
       }
 #ifdef WITH_CFITSIO
       else if (ftype == POWSPEC_FFMT_FITS) {
-        P_ERR("FITS format not implemented yet\n");      /* TODO */
+        P_ERR("FITS format not implemented yet.\n");      /* TODO */
         cata_destroy(cat);
         return NULL;
       }
@@ -163,11 +163,11 @@ CATA *read_cata(const CONF *conf) {
 
       /* Compute the weights if necessary. */
       if (cat->wdata[i] == 0 || sumw2[0] == 0) {
-        P_ERR("invalid completeness or FKP weights in the data catalog\n");
+        P_ERR("invalid completeness or FKP weights in the data catalog.\n");
         cata_destroy(cat); return NULL;
       }
       if (cat->wrand[i] == 0 || sumw2[1] == 0) {
-        P_ERR("invalid completeness or FKP weights in the random catalog\n");
+        P_ERR("invalid completeness or FKP weights in the random catalog.\n");
         cata_destroy(cat); return NULL;
       }
       cat->alpha[i] = cat->wdata[i] / cat->wrand[i];

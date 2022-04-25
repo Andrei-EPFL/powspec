@@ -42,7 +42,6 @@ Function `usage`:
   Print the usage of command line options.
 ******************************************************************************/
 static void usage(void *args) {
-  (void) args;
   printf("Usage: POWSPEC [OPTION]\n\
 Compute the auto and cross power spectra from catalogs.\n\
   -h, --help\n\
@@ -138,7 +137,6 @@ Function `conf_template`:
   Print a template configuration file.
 ******************************************************************************/
 static void conf_template(void *args) {
-  (void) args;
   printf("# Configuration file for powspec (default: `%s').\n\
 # Format: keyword = value # comment\n\
 #     or: keyword = [element1, element2]\n\
@@ -175,7 +173,7 @@ RAND_COMMENT    = \n\
     # Character, same dimension as `DATA_CATALOG`. '' for disabling comments.\n\
 DATA_FORMATTER  = \n\
 RAND_FORMATTER  = \n\
-    # C99-style formatter for parsing lines of ASCII format input files.\n\
+    # C99-style formatter for reading columns of ASCII format input files.\n\
     # String, same dimension as `DATA_CATALOG` (e.g. \"%%d %%ld %%f %%lf %%s\").\n\
     # If a column is suppressed by *, it is not counted for the column number.\n\
     #   e.g., for \"%%d %%*s %%f\", the float number corresponds to column $2.\n\
@@ -231,7 +229,7 @@ Z_CMVDST_CNVT   = \n\
     # Filename of a table for redshift to comoving distance conversion.\n\
     # It must be a text file with two columns: (redshift, comoving distance).\n\
     # If this file is set, the cosmological parameters above are omitted.\n\
-    # Lines starting with '%c' are omitted.\n\
+    # Lines start with '%c' are omitted.\n\
 \n\
 ##################################################\n\
 #  Configurations for power spectra evaluation   #\n\
@@ -303,7 +301,7 @@ OVERWRITE       = \n\
     # * positive: force overwriting output files whenever possible;\n\
     # * negative: notify at most this number of times for existing files.\n\
 VERBOSE         = \n\
-    # Boolean option, indicate whether to show detailed outputs (unset: %c).\n",
+    # Boolean option, indicate whether show detailed outputs (unset: %c).\n",
   DEFAULT_CONF_FILE, DEFAULT_FILE_FORMAT, POWSPEC_FFMT_ASCII,
   POWSPEC_FFMT_FITS, DEFAULT_FILE_SKIP, DEFAULT_WT_COMP, DEFAULT_WT_FKP,
   DEFAULT_CONVERT ? 'T' : 'F', DEFAULT_CMVDST_ERR, POWSPEC_READ_COMMENT,
@@ -354,7 +352,7 @@ Return:
 ******************************************************************************/
 static cfg_t *conf_read(CONF *conf, const int argc, char *const *argv) {
   if (!conf) {
-    P_ERR("the structure for configurations is not initialised\n");
+    P_ERR("the structure for configurations is not initialised.\n");
     return NULL;
   }
   cfg_t *cfg = cfg_init();
@@ -431,9 +429,7 @@ static cfg_t *conf_read(CONF *conf, const int argc, char *const *argv) {
 
   /* Read parameters from configuration file. */
   if (!cfg_is_set(cfg, &conf->fconf)) conf->fconf = DEFAULT_CONF_FILE;
-  if (access(conf->fconf, R_OK))
-    P_WRN("cannot access the configuration file: `%s'\n", conf->fconf);
-  else if (cfg_read_file(cfg, conf->fconf, POWSPEC_PRIOR_FILE)) P_CFG_ERR(cfg);
+  if (cfg_read_file(cfg, conf->fconf, POWSPEC_PRIOR_FILE)) P_CFG_ERR(cfg);
   P_CFG_WRN(cfg);
 
   return cfg;
@@ -455,11 +451,11 @@ Return:
 ******************************************************************************/
 static inline int check_input(const char *fname, const char *key) {
   if (!fname || *fname == '\0') {
-    P_ERR("the input " FMT_KEY(%s) " is not set\n", key);
+    P_ERR("the input " FMT_KEY(%s) " is not set.\n", key);
     return POWSPEC_ERR_CFG;
   }
   if (access(fname, R_OK)) {
-    P_ERR("cannot access " FMT_KEY(%s) ": `%s'\n", key, fname);
+    P_ERR("cannot access " FMT_KEY(%s) ": `%s'.\n", key, fname);
     return POWSPEC_ERR_FILE;
   }
   return 0;
@@ -477,7 +473,7 @@ Return:
 ******************************************************************************/
 static int check_output(char *fname, const char *key, const int ovwrite) {
   if (!fname || *fname == '\0') {
-    P_ERR("the output " FMT_KEY(%s) " is not set\n", key);
+    P_ERR("the output " FMT_KEY(%s) " is not set.\n", key);
     return POWSPEC_ERR_CFG;
   }
 
@@ -485,17 +481,17 @@ static int check_output(char *fname, const char *key, const int ovwrite) {
   if (!access(fname, F_OK)) {
     /* not overwriting */
     if (ovwrite == 0) {
-      P_ERR("the output " FMT_KEY(%s) " exists: `%s'\n", key, fname);
+      P_ERR("the output " FMT_KEY(%s) " exists: `%s'.\n", key, fname);
       return POWSPEC_ERR_FILE;
     }
     /* force overwriting */
     else if (ovwrite > 0) {
-      P_WRN("the output " FMT_KEY(%s) " will be overwritten: `%s'\n",
+      P_WRN("the output " FMT_KEY(%s) " will be overwritten: `%s'.\n",
           key, fname);
     }
     /* ask for decision */
     else {
-      P_WRN("the output " FMT_KEY(%s) " exists: `%s'\n", key, fname);
+      P_WRN("the output " FMT_KEY(%s) " exists: `%s'.\n", key, fname);
       char confirm = 0;
       for (int i = 0; i != ovwrite; i--) {
         fprintf(stderr, "Are you going to overwrite it? (y/n): ");
@@ -503,30 +499,30 @@ static int check_output(char *fname, const char *key, const int ovwrite) {
         int c;
         while((c = getchar()) != '\n' && c != EOF) continue;
         if (confirm == 'n') {
-          P_ERR("cannot write to the file\n");
+          P_ERR("cannot write to the file.\n");
           return POWSPEC_ERR_FILE;
         }
         else if (confirm == 'y') break;
       }
       if (confirm != 'y') {
-        P_ERR("too many failed inputs\n");
+        P_ERR("too many failed inputs.\n");
         return POWSPEC_ERR_FILE;
       }
     }
 
     /* Check file permission for overwriting. */
     if (access(fname, W_OK)) {
-      P_ERR("cannot write to file `%s'\n", fname);
+      P_ERR("cannot write to file `%s'.\n", fname);
       return POWSPEC_ERR_FILE;
     }
   }
-  /* Check the path permission. */
+  /* Check if the path permission. */
   else {
     char *end;
     if ((end = strrchr(fname, POWSPEC_PATH_SEP)) != NULL) {
       *end = '\0';
       if (access(fname, X_OK)) {
-        P_ERR("cannot access the directory `%s'\n", fname);
+        P_ERR("cannot access the directory `%s'.\n", fname);
         return POWSPEC_ERR_FILE;
       }
       *end = POWSPEC_PATH_SEP;
@@ -556,12 +552,12 @@ static int check_file_fmt(const cfg_t *cfg, const int num, const char *name,
   int i, n;
   /* Check CATALOG. */
   if (!(n = cfg_get_size(cfg, fname))) {
-    P_ERR(FMT_KEY(%s_CATALOG) " is not set\n", name);
+    P_ERR(FMT_KEY(%s_CATALOG) " is not set.\n", name);
     return POWSPEC_ERR_CFG;
   }
   if (n < num) {
     P_ERR("too few elements of " FMT_KEY(%s_CATALOG) " (" FMT_KEY(OUTPUT_AUTO)
-        " or " FMT_KEY(OUTPUT_CROSS) " may require more catalogs)\n", name);
+        " or " FMT_KEY(OUTPUT_CROSS) " may require more catalogs).\n", name);
     return POWSPEC_ERR_CFG;
   }
   else if (n > num) {
@@ -571,11 +567,11 @@ static int check_file_fmt(const cfg_t *cfg, const int num, const char *name,
 
   /* Check FORMAT. */
   if (!(n = cfg_get_size(cfg, type))) {
-    P_WRN(FMT_KEY(%s_FORMAT) " is not set\nUse the default value: %d (%s)\n",
+    P_WRN(FMT_KEY(%s_FORMAT) " is not set.\nUse the default value: %d (%s)\n",
         name, DEFAULT_FILE_FORMAT, powspec_ffmt_names[DEFAULT_FILE_FORMAT]);
   }
   else if (n < num) {
-    P_ERR("too few elements of " FMT_KEY(%s_FORMAT) "\n", name);
+    P_ERR("too few elements of " FMT_KEY(%s_FORMAT) ".\n", name);
     return POWSPEC_ERR_CFG;
   }
   else if (n > num) {
@@ -595,8 +591,8 @@ static int check_file_fmt(const cfg_t *cfg, const int num, const char *name,
 #ifdef WITH_CFITSIO
         break;
 #else
-        P_ERR("FITS format is not enabled\n\
-Please re-compile the code with option -DWITH_CFITSIO\n");
+        P_ERR("FITS format is not enabled.\n\
+Please re-compile the code with option -DWITH_CFITSIO.\n");
         return POWSPEC_ERR_CFG;
 #endif
       default:
@@ -610,7 +606,7 @@ Please re-compile the code with option -DWITH_CFITSIO\n");
     /* Check SKIP. */
     if ((n = cfg_get_size(cfg, skip))) {
       if (n < num) {
-        P_ERR("too few elements of " FMT_KEY(%s_SKIP) "\n", name);
+        P_ERR("too few elements of " FMT_KEY(%s_SKIP) ".\n", name);
         return POWSPEC_ERR_CFG;
       }
       else if (n > num) {
@@ -620,7 +616,7 @@ Please re-compile the code with option -DWITH_CFITSIO\n");
       }
       for (i = 0; i < num; i++) {
         if ((*skip)[i] < 0) {
-          P_ERR(FMT_KEY(%s_SKIP) " cannot be negative\n", name);
+          P_ERR(FMT_KEY(%s_SKIP) " cannot be negative.\n", name);
           return POWSPEC_ERR_CFG;
         }
       }
@@ -628,7 +624,7 @@ Please re-compile the code with option -DWITH_CFITSIO\n");
     /* Check COMMENT. */
     if ((n = cfg_get_size(cfg, cmt))) {
       if (n < num) {
-        P_ERR("too few elements of " FMT_KEY(%s_COMMENT) "\n", name);
+        P_ERR("too few elements of " FMT_KEY(%s_COMMENT) ".\n", name);
         return POWSPEC_ERR_CFG;
       }
       else if (n > num) {
@@ -639,11 +635,11 @@ Please re-compile the code with option -DWITH_CFITSIO\n");
     }
     /* Check FORMATTER. */
     if (!(n = cfg_get_size(cfg, fmtr))) {
-      P_ERR(FMT_KEY(%s_FORMATTER) " is not set\n", name);
+      P_ERR(FMT_KEY(%s_FORMATTER) " is not set.\n", name);
       return POWSPEC_ERR_CFG;
     }
     else if (n < num) {
-      P_ERR("too few elements of " FMT_KEY(%s_FORMATTER) "\n", name);
+      P_ERR("too few elements of " FMT_KEY(%s_FORMATTER) ".\n", name);
       return POWSPEC_ERR_CFG;
     }
     else if (n > num) {
@@ -656,7 +652,7 @@ Please re-compile the code with option -DWITH_CFITSIO\n");
   /* Check SELECTION. */
   if ((n = cfg_get_size(cfg, sel))) {
     if (n < num) {
-      P_ERR("too few elements of " FMT_KEY(%s_SELECTION) "\n", name);
+      P_ERR("too few elements of " FMT_KEY(%s_SELECTION) ".\n", name);
       return POWSPEC_ERR_CFG;
     }
     else if (n > num) {
@@ -668,7 +664,7 @@ Please re-compile the code with option -DWITH_CFITSIO\n");
   /* Check WT_COMP. */
   if ((n = cfg_get_size(cfg, wcomp))) {
     if (n < num) {
-      P_ERR("too few elements of " FMT_KEY(%s_WT_COMP) "\n", name);
+      P_ERR("too few elements of " FMT_KEY(%s_WT_COMP) ".\n", name);
       return POWSPEC_ERR_CFG;
     }
     else if (n > num) {
@@ -681,7 +677,7 @@ Please re-compile the code with option -DWITH_CFITSIO\n");
     /* Check WT_FKP. */
     if ((n = cfg_get_size(cfg, wfkp))) {
       if (n < num) {
-        P_ERR("too few elements of " FMT_KEY(%s_WT_FKP) "\n", name);
+        P_ERR("too few elements of " FMT_KEY(%s_WT_FKP) ".\n", name);
         return POWSPEC_ERR_CFG;
       }
       else if (n > num) {
@@ -692,7 +688,7 @@ Please re-compile the code with option -DWITH_CFITSIO\n");
     /* Check NZ. */
     if ((n = cfg_get_size(cfg, nz))) {
       if (n < num) {
-        P_ERR("too few elements of " FMT_KEY(%s_NZ) "\n", name);
+        P_ERR("too few elements of " FMT_KEY(%s_NZ) ".\n", name);
         return POWSPEC_ERR_CFG;
       }
       else if (n > num) {
@@ -703,7 +699,7 @@ Please re-compile the code with option -DWITH_CFITSIO\n");
     /* Check CONVERT. */
     if ((n = cfg_get_size(cfg, cnvt))) {
       if (n < num) {
-        P_ERR("too few elements of " FMT_KEY(%s_CONVERT) "\n", name);
+        P_ERR("too few elements of " FMT_KEY(%s_CONVERT) ".\n", name);
         return POWSPEC_ERR_CFG;
       }
       else if (n > num) {
@@ -717,11 +713,11 @@ Please re-compile the code with option -DWITH_CFITSIO\n");
 
   /* Check POSITION. */
   if (!(n = cfg_get_size(cfg, pos))) {
-    P_ERR(FMT_KEY(%s_POSITION) " is not set\n", name);
+    P_ERR(FMT_KEY(%s_POSITION) " is not set.\n", name);
     return POWSPEC_ERR_CFG;
   }
   else if (n < num * 3) {
-    P_ERR("too few elements of " FMT_KEY(%s_POSITION) "\n", name);
+    P_ERR("too few elements of " FMT_KEY(%s_POSITION) ".\n", name);
     return POWSPEC_ERR_CFG;
   }
   else if (n > num * 3) {
@@ -747,11 +743,11 @@ static int check_cosmo(const cfg_t *cfg, double *omega_m, double *omega_l,
     double *omega_k, double *eos_w) {
   /* Check OMEGA_M. */
   if (!cfg_is_set(cfg, omega_m)) {
-    P_ERR(FMT_KEY(OMEGA_M) " is not set\n");
+    P_ERR(FMT_KEY(OMEGA_M) " is not set.\n");
     return POWSPEC_ERR_CFG;
   }
   if (*omega_m <= 0 || *omega_m > 1) {
-    P_ERR(FMT_KEY(OMEGA_M) " must be > 0 and <= 1\n");
+    P_ERR(FMT_KEY(OMEGA_M) " must be > 0 and <= 1.\n");
     return POWSPEC_ERR_CFG;
   }
 
@@ -761,7 +757,7 @@ static int check_cosmo(const cfg_t *cfg, double *omega_m, double *omega_l,
     *omega_k = 0;
   }
   else if (*omega_l < 0) {
-    P_ERR(FMT_KEY(OMEGA_LAMBDA) " must be >= 0\n");
+    P_ERR(FMT_KEY(OMEGA_LAMBDA) " must be >= 0.\n");
     return POWSPEC_ERR_CFG;
   }
   else *omega_k = 1 - *omega_m - *omega_l;
@@ -769,7 +765,7 @@ static int check_cosmo(const cfg_t *cfg, double *omega_m, double *omega_l,
   /* Check DE_EOS_W. */
   if (!cfg_is_set(cfg, eos_w)) *eos_w = -1;
   else if (*eos_w > -1 / (double) 3) {
-    P_ERR(FMT_KEY(DE_EOS_W) " must be <= -1/3\n");
+    P_ERR(FMT_KEY(DE_EOS_W) " must be <= -1/3.\n");
     return POWSPEC_ERR_CFG;
   }
 
@@ -778,7 +774,7 @@ static int check_cosmo(const cfg_t *cfg, double *omega_m, double *omega_l,
   double widx = w3 + 1;
   if (*omega_k * pow(*omega_l * (-widx), widx / w3) <=
       *omega_l * w3 * pow(*omega_m, widx / w3)) {
-    P_ERR("negative H^2 given the cosmological parameters\n");
+    P_ERR("negative H^2 given the cosmological parameters.\n");
     return POWSPEC_ERR_CFG;
   }
   return 0;
@@ -801,7 +797,7 @@ static int check_box(const cfg_t *cfg, const bool issim, double **bsize,
   if (!(num = cfg_get_size(cfg, bsize))) {
     /* Box size is mandatory for simulation boxes. */
     if (issim) {
-      P_ERR(FMT_KEY(BOX_SIZE) " is not set\n");
+      P_ERR(FMT_KEY(BOX_SIZE) " is not set.\n");
       return POWSPEC_ERR_CFG;
     }
 
@@ -810,19 +806,19 @@ static int check_box(const cfg_t *cfg, const bool issim, double **bsize,
     if (!(npad = cfg_get_size(cfg, bpad))) {
       *bpad = malloc(sizeof(double) * 3);
       if (!(*bpad)) {
-        P_ERR("failed to allocate memory for box padding\n");
+        P_ERR("failed to allocate memory for box padding.\n");
         return POWSPEC_ERR_MEMORY;
       }
       (*bpad)[0] = (*bpad)[1] = (*bpad)[2] = DEFAULT_BOX_PAD;
     }
     else if (npad == 1) {
       if (**bpad < 0) {
-        P_ERR(FMT_KEY(BOX_PAD) " must be >= 0\n");
+        P_ERR(FMT_KEY(BOX_PAD) " must be >= 0.\n");
         return POWSPEC_ERR_CFG;
       }
       double *tmp = realloc(*bpad, sizeof(double) * 3);
       if (!tmp) {
-        P_ERR("failed to allocate memory for box padding\n");
+        P_ERR("failed to allocate memory for box padding.\n");
         return POWSPEC_ERR_MEMORY;
       }
       *bpad = tmp;
@@ -830,7 +826,7 @@ static int check_box(const cfg_t *cfg, const bool issim, double **bsize,
     }
     else if (npad == 3) {
       if ((*bpad)[0] < 0 || (*bpad)[1] < 0 || (*bpad)[2] < 0) {
-        P_ERR(FMT_KEY(BOX_PAD) " must be >= 0\n");
+        P_ERR(FMT_KEY(BOX_PAD) " must be >= 0.\n");
         return POWSPEC_ERR_CFG;
       }
     }
@@ -841,12 +837,12 @@ static int check_box(const cfg_t *cfg, const bool issim, double **bsize,
   }
   else if (num == 1) {
     if (**bsize <= 0) {
-      P_ERR(FMT_KEY(BOX_SIZE) " must be > 0\n");
+      P_ERR(FMT_KEY(BOX_SIZE) " must be > 0.\n");
       return POWSPEC_ERR_CFG;
     }
     double *tmp = realloc(*bsize, sizeof(double) * 3);
     if (!tmp) {
-      P_ERR("failed to allocate memory for the box size\n");
+      P_ERR("failed to allocate memory for the box size.\n");
       return POWSPEC_ERR_MEMORY;
     }
     *bsize = tmp;
@@ -854,7 +850,7 @@ static int check_box(const cfg_t *cfg, const bool issim, double **bsize,
   }
   else if (num == 3) {
     if ((*bsize)[0] <= 0 || (*bsize)[1] <= 0 || (*bsize)[2] <= 0) {
-      P_ERR(FMT_KEY(BOX_SIZE) " must be > 0\n");
+      P_ERR(FMT_KEY(BOX_SIZE) " must be > 0.\n");
       return POWSPEC_ERR_CFG;
     }
   }
@@ -878,7 +874,7 @@ static int conf_verify(const cfg_t *cfg, CONF *conf) {
   int i, e, num;
   /* Check CUBIC_SIM first, since it decides whether random is needed. */
   if (!cfg_is_set(cfg, &conf->issim)) {
-    P_ERR(FMT_KEY(CUBIC_SIM) " is not set\n");
+    P_ERR(FMT_KEY(CUBIC_SIM) " is not set.\n");
     return POWSPEC_ERR_CFG;
   }
 
@@ -915,7 +911,7 @@ static int conf_verify(const cfg_t *cfg, CONF *conf) {
     }
   }
   if (!conf->ndata) {
-    P_ERR("no output file specified\n");
+    P_ERR("no output file specified.\n");
     return POWSPEC_ERR_CFG;
   }
 
@@ -940,7 +936,7 @@ static int conf_verify(const cfg_t *cfg, CONF *conf) {
 
     /* Check DATA_NZ and RAND_NZ. */
     if (!(conf->dnz) && !(conf->rnz)) {
-      P_ERR(FMT_KEY(DATA_NZ) " and " FMT_KEY(RAND_NZ) " are both not set\n");
+      P_ERR(FMT_KEY(DATA_NZ) " and " FMT_KEY(RAND_NZ) " are both not set.\n");
       return POWSPEC_ERR_CFG;
     }
   }
@@ -982,7 +978,7 @@ static int conf_verify(const cfg_t *cfg, CONF *conf) {
       /* Check CMVDST_ERR. */
       if (!cfg_is_set(cfg, &conf->ecdst)) conf->ecdst = DEFAULT_CMVDST_ERR;
       else if (conf->ecdst < DOUBLE_EPSILON) {
-        P_ERR(FMT_KEY(CMVDST_ERR) " is smaller than the machine epsilon\n");
+        P_ERR(FMT_KEY(CMVDST_ERR) " is smaller than the machine epsilon.\n");
         return POWSPEC_ERR_CFG;
       }
     }
@@ -992,20 +988,20 @@ static int conf_verify(const cfg_t *cfg, CONF *conf) {
   if (conf->issim) {
     if ((num = cfg_get_size(cfg, &conf->los))) {
       if (num != 3) {
-        P_ERR(FMT_KEY(LINE_OF_SIGHT) " must be a 3-element array\n");
+        P_ERR(FMT_KEY(LINE_OF_SIGHT) " must be a 3-element array.\n");
         return POWSPEC_ERR_CFG;
       }
       double tmp = conf->los[0] * conf->los[0] + conf->los[1] * conf->los[1]
         + conf->los[2] * conf->los[2];
       if (tmp < 1 - DOUBLE_TOL || tmp > 1 + DOUBLE_TOL) {
-        P_ERR(FMT_KEY(LINE_OF_SIGHT) " must be a unit vector\n");
+        P_ERR(FMT_KEY(LINE_OF_SIGHT) " must be a unit vector.\n");
         return POWSPEC_ERR_CFG;
       }
     }
     else {      /* default line of sight: [0,0,1] */
       conf->los = calloc(3, sizeof(double));
       if (!conf->los) {
-        P_ERR("failed to alocate memory for " FMT_KEY(LINE_OF_SIGHT) "\n");
+        P_ERR("failed to alocate memory for " FMT_KEY(LINE_OF_SIGHT) ".\n");
         return POWSPEC_ERR_MEMORY;
       }
       conf->los[2] = 1;
@@ -1017,15 +1013,15 @@ static int conf_verify(const cfg_t *cfg, CONF *conf) {
 
   /* Check GRID_SIZE. */
   if (!cfg_is_set(cfg, &conf->gsize)) {
-    P_ERR(FMT_KEY(GRID_SIZE) " is not set\n");
+    P_ERR(FMT_KEY(GRID_SIZE) " is not set.\n");
     return POWSPEC_ERR_CFG;
   }
   else if (conf->gsize <= 1) {
-    P_ERR(FMT_KEY(GRID_SIZE) " must be > 1\n");
+    P_ERR(FMT_KEY(GRID_SIZE) " must be > 1.\n");
     return POWSPEC_ERR_CFG;
   }
   else if (conf->gsize > POWSPEC_MAX_GSIZE) {
-    P_ERR(FMT_KEY(GRID_SIZE) " must be smaller than the preset limit: %d\n",
+    P_ERR(FMT_KEY(GRID_SIZE) " must be smaller than the preset limit: %d.\n",
         POWSPEC_MAX_GSIZE);
     return POWSPEC_ERR_CFG;
   }
@@ -1050,7 +1046,7 @@ static int conf_verify(const cfg_t *cfg, CONF *conf) {
 
   /* Check MULTIPOLE. */
   if (!(conf->npole = cfg_get_size(cfg, &conf->poles))) {
-    P_ERR(FMT_KEY(MULTIPOLE) " is not set\n");
+    P_ERR(FMT_KEY(MULTIPOLE) " is not set.\n");
     return POWSPEC_ERR_CFG;
   }
   /* Sort multipoles and remove duplicates. */
@@ -1073,31 +1069,31 @@ static int conf_verify(const cfg_t *cfg, CONF *conf) {
     conf->npole = i + 1;
   }
   if (conf->poles[0] < 0 || conf->poles[conf->npole - 1] > POWSPEC_MAX_ELL) {
-    P_ERR(FMT_KEY(MULTIPOLE) " must be between 0 and %d\n", POWSPEC_MAX_ELL);
+    P_ERR(FMT_KEY(MULTIPOLE) " must be between 0 and %d.\n", POWSPEC_MAX_ELL);
     return POWSPEC_ERR_CFG;
   }
 
   /* Check KMIN. */
   if (!cfg_is_set(cfg, &conf->kmin)) conf->kmin = DEFAULT_KMIN;
   else if (conf->kmin < 0) {
-    P_ERR(FMT_KEY(KMIN) " must be >= 0\n");
+    P_ERR(FMT_KEY(KMIN) " must be >= 0.\n");
     return POWSPEC_ERR_CFG;
   }
 
   /* Check LOG_SCALE. */
   if (!cfg_is_set(cfg, &conf->logscale)) conf->logscale = DEFAULT_LOG_SCALE;
   if (conf->logscale && conf->kmin == 0) {
-    P_ERR(FMT_KEY(KMIN) " must be > 0 for log scale\n");
+    P_ERR(FMT_KEY(KMIN) " must be > 0 for log scale.\n");
     return POWSPEC_ERR_CFG;
   }
 
   /* Check BIN_SIZE. */
   if (!cfg_is_set(cfg, &conf->kbin)) {
-    P_ERR(FMT_KEY(BIN_SIZE) " is not set\n");
+    P_ERR(FMT_KEY(BIN_SIZE) " is not set.\n");
     return POWSPEC_ERR_CFG;
   }
   else if (conf->kbin <= 0) {
-    P_ERR(FMT_KEY(BIN_SIZE) " must be > 0\n");
+    P_ERR(FMT_KEY(BIN_SIZE) " must be > 0.\n");
     return POWSPEC_ERR_CFG;
   }
 
@@ -1105,19 +1101,19 @@ static int conf_verify(const cfg_t *cfg, CONF *conf) {
   if (!cfg_is_set(cfg, &conf->kmax)) conf->kmax = POWSPEC_KMAX_UNSET_VAL;
   else {
     if (conf->kmax <= 0) {
-      P_ERR(FMT_KEY(KMAX) " must be > 0\n");
+      P_ERR(FMT_KEY(KMAX) " must be > 0.\n");
       return POWSPEC_ERR_CFG;
     }
     if (conf->logscale) {
       if (log10(conf->kmax) < log10(conf->kmin) + conf->kbin) {
         P_ERR("log10(" FMT_KEY(KMAX) ") must not be smaller than log10("
-            FMT_KEY(KMIN) ") + " FMT_KEY(BIN_SIZE) "\n");
+            FMT_KEY(KMIN) ") + " FMT_KEY(BIN_SIZE) ".\n");
         return POWSPEC_ERR_CFG;
       }
     }
     else if (conf->kmax < conf->kmin + conf->kbin) {
       P_ERR(FMT_KEY(KMAX) " must not be smaller than " FMT_KEY(KMIN)
-          " + " FMT_KEY(BIN_SIZE) "\n");
+          " + " FMT_KEY(BIN_SIZE) ".\n");
       return POWSPEC_ERR_CFG;
     }
   }
@@ -1324,9 +1320,6 @@ Return:
   The structure for storing configurations.
 ******************************************************************************/
 CONF *load_conf(const int argc, char *const *argv) {
-  printf("Loading configurations ...");
-  fflush(stdout);
-
   CONF *conf = conf_init();
   if (!conf) return NULL;
 
@@ -1336,8 +1329,10 @@ CONF *load_conf(const int argc, char *const *argv) {
     return NULL;
   }
 
+  printf("Loading configurations ...");
+  fflush(stdout);
+
   if (conf_verify(cfg, conf)) {
-    if (cfg_is_set(cfg, &conf->fconf)) free(conf->fconf);
     conf_destroy(conf);
     cfg_destroy(cfg);
     return NULL;
