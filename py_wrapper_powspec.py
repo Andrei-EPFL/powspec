@@ -1,5 +1,6 @@
 from ctypes import *
 import numpy as np
+from cffi import FFI
 
 
 class Data(Structure):
@@ -25,15 +26,23 @@ class Cata(Structure):
 
 
 def compute_catalog():
-    x, y, z = np.loadtxt("/global/homes/a/avariu/phd/chengscodes/test.test", usecols=(0,1,2), unpack=True)
-
+    x, y, z = np.loadtxt("/global/homes/a/avariu/desi_avariu/FastPM_SLICS/slics_galaxy_rsd/1.041halo.dat_LOS996.gcat", usecols=(0,1,2), unpack=True, dtype=np.float32)
+    # x, y, z = (x + 505) % 505, (y + 505) % 505, (z + 505) % 505
+    print(len(x))
+    range_ = (0 <= x) & ( x < 505) & (0 <= y) & ( y < 505) & (0 <= z) & ( z < 505)
+    print(np.max(x))
+    print(np.max(y))
+    print(np.max(z))
+    x, y, z = x[range_], y[range_], z[range_]
+    
+    print(len(x))
     num = 1
     ndata = len(x)
     nrand = 0
     wdata = ndata
     wrand = 0.
     alpha = 0.
-    shot = 0.
+    shot = 0. # 1/n n(density of the box) n = len(x) / (505)**3
     norm = 0.
 
 
@@ -70,14 +79,14 @@ def compute_catalog():
     return ca
 
 def main():
-    lib = cdll.LoadLibrary("/global/homes/a/avariu/phd/chengscodes/powspec_lib/libpowspec.so")
+    lib = cdll.LoadLibrary("/global/homes/a/avariu/phd/chengscodes/powspec_cffi/libpowspec.so")
 
-    config_file = b'/global/homes/a/avariu/phd/chengscodes/powspec_lib/etc/powspec_HODFIT.conf'
-    output_file = b'/global/homes/a/avariu/phd/test.pspec_py'
-    input_file = b'/global/homes/a/avariu/phd/chengscodes/test.test'
+    config_file = b'/global/homes/a/avariu/phd/chengscodes/powspec_cffi/etc/powspec_HODFIT.conf'
+    output_file = b'/global/homes/a/avariu/phd/1.041halo.dat_LOS996.gcat_wrapper_py.pspec'
+    input_file = b'/global/homes/a/avariu/desi_avariu/FastPM_SLICS/slics_galaxy_rsd/1.041halo.dat_LOS996.gcat'
 
     ### Arguments
-    size_text = len(config_file)
+    size_text = len(input_file)
     arg0  = create_string_buffer(b'test', size_text)
     arg1  = create_string_buffer(b'-c', size_text)
     arg2 = create_string_buffer(config_file)
@@ -100,27 +109,30 @@ def main():
     nkbin = c_int(0)
 
     #### Method 1
-    # pk_instance = c_double * (4 * nbin)
-    # pk_array = pk_instance()
-
-    # if (lib.compute_pk(pointer(cata), pointer(nkbin), pointer(pk_array), c_int(N_args), args_pointer_arr_to_send)):
-    #     print("ERROR: the pk code crashed")
+    nbin = 1000
+    pk_instance = c_double * (4 * nbin)
+    pk_array = pk_instance()
+    t = lib.compute_pk(pointer(cata), pointer(nkbin), pointer(pk_array), c_int(N_args), args_pointer_arr_to_send)
+    if t == 0:
+        print("ERROR: the pk code crashed")
     #####
 
     #### Method 2
 
-    lib.compute_pk.restype = c_void_p
-    address_pk = lib.compute_pk(pointer(cata), pointer(nkbin), c_int(N_args), args_pointer_arr_to_send)
+    # lib.compute_pk.restype = c_void_p
+    # address_pk = lib.compute_pk(pointer(cata), pointer(nkbin), c_int(N_args), args_pointer_arr_to_send)
+    # nkbin_value = nkbin.value
+
+    # pk_instance = c_double * (4 * nkbin_value)
+
+    # print(address_pk)
+    # pk_array = pk_instance.from_address(address_pk)
+
+
+
+    # print(pointer(pk_array))
     nkbin_value = nkbin.value
 
-    pk_instance = c_double * (4 * nkbin_value)
-
-    print(address_pk)
-    pk_array = pk_instance.from_address(address_pk)
-
-
-
-    print(pointer(pk_array))
     nbin = nkbin_value
     ### From C to NumPy Array
     k = np.zeros(nbin)
@@ -134,32 +146,43 @@ def main():
         pk2[i] = pk_array[2 * nbin + i]
         pk4[i] = pk_array[3 * nbin + i]
 
-    lib.free_pk_array(pointer(pk_array))
-    print(pk_array[0: nbin])
-    print(k)
-    np.savetxt("test_test_2.dat", np.array([k, pk0, pk2, pk4]).T, fmt=("%f %f %f %f"))
+    # lib.free_pk_array(pointer(pk_array))
+    # print(pk_array[0: nbin])
+    # print(k)
+    np.savetxt("/global/homes/a/avariu/phd/1.041halo.dat_LOS996.gcat_wrapper_py.pspec", np.array([k, pk0, pk2, pk4]).T, fmt=("%f %f %f %f"))
 
 def plot():
     import matplotlib.pyplot as pt
     fig, ax = pt.subplots(1, 3)
-    k1, pk01, pk21, pk41 = np.loadtxt("test.pspec_CHENG", usecols=(0, 5, 6, 7), unpack=True)
+    k1, pk01, pk21, pk41 = np.loadtxt("/global/homes/a/avariu/phd/1.041halo.dat_LOS996.gcat.pspec", usecols=(0, 5, 6, 7), unpack=True)
     # ax[0].plot(k, k*pk0)
     # ax[1].plot(k, k*pk2)
     # ax[2].plot(k, k*pk4)
 
-    k, pk0, pk2, pk4 = np.loadtxt("test_test_2.dat", usecols=(0, 1, 2, 3), unpack=True)
-    ax[0].plot(k, (pk0 -pk01)/pk01)
-    ax[1].plot(k, (pk2 - pk21)/ pk21)
-    ax[2].plot(k, (pk4 - pk41)/pk41)
-    
-    k2, pk02, pk22, pk42 = np.loadtxt("test.pspec_py", usecols=(0, 5, 6, 7), unpack=True)
-    ax[0].plot(k, (pk02 -pk01)/pk01)
-    ax[1].plot(k, (pk22 - pk21)/ pk21)
-    ax[2].plot(k, (pk42 - pk41)/pk41)
-    
+    k, pk0, pk2, pk4 = np.loadtxt("/global/homes/a/avariu/phd/1.041halo.dat_LOS996.gcat_wrapper_py.pspec", usecols=(0, 1, 2, 3), unpack=True)
+    ax[0].plot(k[1:], (pk0[1:] - pk01[1:]))
+    ax[1].plot(k[1:], (pk2[1:] - pk21[1:]))
+    ax[2].plot(k[1:], (pk4[1:] - pk41[1:]))
+
+    ax[0].axhline(0, color="grey")
+    ax[1].axhline(0, color="grey")
+    ax[2].axhline(0, color="grey")
+    # ax[0].set_ylim([-0.1, 0.1])
+    # ax[1].set_ylim([-0.1, 0.1])
+    # ax[2].set_ylim([-0.1, 0.1])
     fig.savefig("test.png")
 
+
+# def compute_ffi():
+#     ffibuilder = FFI()
+#     ffibuilder.cdef("double *compute_pk(CATA *cata, int *nkbin, int argc, char *argv[]);")
+#     ffibuilder.set_source("_mypowspec_cffi",
+#     """
+#      #include "powspec.h"   // the C header of the library
+#     """, libraries=['libpowspec.so'])   # library name, for the linker
+
 if __name__ == '__main__':
+    # compute_ffi()
     main()
     plot()
 

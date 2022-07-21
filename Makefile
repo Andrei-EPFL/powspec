@@ -15,7 +15,7 @@ endif
 LIBS += -DSINGLE_PREC
 
 # Settings for OpenMP (comment the following line to disable OpenMP)
-LIBS += -DOMP -fopenmp -lfftw3f_omp
+LIBS += -fopenmp -lfftw3f
 
 # Settings for CFITSIO (not implemented yet)
 

@@ -25,7 +25,7 @@ void free_pk_array(double *pk_array) {
   free(pk_array);
 }
 
-double *compute_pk(CATA *cata, int *nkbin, int argc, char *argv[]) {
+int compute_pk(CATA *cata, int *nkbin, double *pk_array, int argc, char *argv[]) {
   printf("The following arguments were passed to main():\n");
   printf("argnum \t value \n");
   for (int i = 0; i<argc; i++) printf("%d \t %s \n", i, argv[i]);
@@ -35,47 +35,32 @@ double *compute_pk(CATA *cata, int *nkbin, int argc, char *argv[]) {
   if (!(conf = load_conf(argc, argv))) {
     printf(FMT_FAIL);
     P_EXT("failed to load configuration parameters\n");
-    return NULL;
+    return 0;
   }
 
-  // CATA *cata;
-  // if (!(cata = read_cata(conf))) {
+  // if (cnvt_coord(conf, cata)) {
   //   printf(FMT_FAIL);
-  //   P_EXT("failed to read the catalogs.\n");
+  //   P_EXT("failed to convert coordinates\n");
   //   conf_destroy(conf);
-  //   return POWSPEC_ERR_CATA;
+  //   return 0;
   // }
-
-  if (cnvt_coord(conf, cata)) {
-    printf(FMT_FAIL);
-    P_EXT("failed to convert coordinates\n");
-    conf_destroy(conf); cata_destroy(cata);
-    return NULL;
-  }
 
   MESH *mesh;
   if (!(mesh = genr_mesh(conf, cata))) {
     printf(FMT_FAIL);
     P_EXT("failed to generate the density fields\n");
-    conf_destroy(conf); cata_destroy(cata);
-    return NULL;
+    conf_destroy(conf); 
+    return 0;
   }
 
   PK *pk;
   if (!(pk = powspec(conf, cata, mesh))) {
     printf(FMT_FAIL);
     P_EXT("failed to compute the power spectra\n");
-    conf_destroy(conf); cata_destroy(cata); mesh_destroy(mesh);
-    return NULL;
+    conf_destroy(conf); mesh_destroy(mesh);
+    return 0;
   }
 
-  // if (save_res(conf, cata, mesh, pk)) {
-  //   printf(FMT_FAIL);
-  //   P_EXT("failed to write the output to file.\n");
-  //   conf_destroy(conf);
-  //   mesh_destroy(mesh); powspec_destroy(pk);
-  //   return POWSPEC_ERR_SAVE;
-  // }
 
   conf_destroy(conf);
   mesh_destroy(mesh);
@@ -83,7 +68,7 @@ double *compute_pk(CATA *cata, int *nkbin, int argc, char *argv[]) {
   *nkbin = pk->nbin;
   int nbin = pk->nbin;
 
-  double *pk_array = calloc(4 * nbin, sizeof(size_t));
+  // double *pk_array = calloc(4 * nbin, sizeof(size_t));
   
   for (int i = 0; i < nbin; i++) {
       pk_array[i] = pk->k[i];
@@ -93,5 +78,5 @@ double *compute_pk(CATA *cata, int *nkbin, int argc, char *argv[]) {
   }
 
   powspec_destroy(pk);
-  return pk_array;
+  return 1;
 }

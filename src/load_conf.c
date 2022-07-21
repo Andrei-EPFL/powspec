@@ -925,8 +925,8 @@ static int conf_verify(const cfg_t *cfg, CONF *conf) {
       &conf->dcmt, &conf->dfmtr, &conf->dpos, &conf->dwcomp, &conf->dwfkp,
       &conf->dnz, &conf->dsel, &conf->dcnvt))) return e;
 
-  for (i = 0; i < conf->ndata; i++)
-    if ((e = check_input(conf->dfname[i], "DATA_CATALOG"))) return e;
+  // for (i = 0; i < conf->ndata; i++)
+  //   if ((e = check_input(conf->dfname[i], "DATA_CATALOG"))) return e;
 
   if (!conf->issim) {
     /* Check format settings of RAND_CATALOG. */
@@ -935,8 +935,8 @@ static int conf_verify(const cfg_t *cfg, CONF *conf) {
         &conf->rcmt, &conf->rfmtr, &conf->rpos, &conf->rwcomp, &conf->rwfkp,
         &conf->rnz, &conf->rsel, &conf->rcnvt))) return e;
 
-    for (i = 0; i < conf->ndata; i++)
-      if ((e = check_input(conf->dfname[i], "RAND_CATALOG"))) return e;
+    // for (i = 0; i < conf->ndata; i++)
+    //   if ((e = check_input(conf->dfname[i], "RAND_CATALOG"))) return e;
 
     /* Check DATA_NZ and RAND_NZ. */
     if (!(conf->dnz) && !(conf->rnz)) {
